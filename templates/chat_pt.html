@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>DOCTOR</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="" name="keywords">
+    <meta content="" name="description">
+
+    <!-- Favicon -->
+    <link href="{%static 'img/favicon.ico'%}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet"> 
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+ 
+    <!-- Libraries Stylesheet -->
+    <link href="{% static 'lib/animate/animate.min.css'%}" rel="stylesheet">
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css'%}" rel="stylesheet">
+    <link href="{% static 'lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css'%}" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{% static 'css/bootstrap.min.css'%}" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="{% static 'css/style.css'%}" rel="stylesheet">
+</head>
+
+<body>
+   
+    
+    
+    
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-grow text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
+
+
+ 
+    <!-- Navbar Start -->
+     <center>
+    <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top p-0 wow fadeIn" data-wow-delay="0.1s">
+        <a href="doctorindex.html" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+            <h1 class="m-0 text-primary"><i class="far fa-hospital me-3"></i>DOCTOR</h1>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto p-4 p-lg-0">
+                <a href="{% url 'appp:doctorindex' id %}" class="nav-item nav-link">Home</a>
+                <a href="{% url 'appp:view_disease' id %}" class="nav-item nav-link">View disease</a>
+                <a href="{% url 'appp:view_appointment' id%}" class="nav-item nav-link">View appointment</a>
+                <a href="chat_pt.html" class="nav-item nav-link">chat with patient</a>
+                <a href="{% url 'appp:logout' id  %}" class="nav-item nav-link">Logout</a>
+
+               
+            </div>
+        </div>
+    </nav></center>
+    <!-- Navbar End -->
+
+
+    <!-- Page Header Start -->
+    
+    
+  
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat with patient</title>
+        <style>
+            body {
+                display: flex;
+                height: 100vh;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            #sidebar {
+                width: 250px;
+                border-right: 1px solid #ccc;
+                padding: 10px;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            #chat-container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            #chat-box {
+                height: calc(100vh - 60px);
+                overflow-y: scroll;
+                border: 1px solid #ccc;
+                padding: 10px;
+                margin-bottom: 10px;
+                background: #f9f9f9;
+            }
+            .message {
+                margin-bottom: 10px;
+            }
+            .message.user {
+                text-align: right;
+            }
+            #chat-form {
+                display: flex;
+                border-top: 1px solid #ccc;
+                padding: 10px;
+                background: #fff;
+            }
+            #message-input {
+                flex: 1;
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+            button {
+                padding: 5px 10px;
+                border: none;
+                background: #007bff;
+                color: #fff;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            button:hover {
+                background: #0056b3;
+            }
+            .patient-item {
+                padding: 10px;
+                border-bottom: 1px solid #ccc;
+                cursor: pointer;
+            }
+            .patient-item:hover {
+                background: #f0f0f0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="sidebar">
+            <h2>Patients</h2>
+            <div id="patient-list">
+                <!-- Patient list items will be inserted here -->
+            </div>
+        </div>
+        <div id="chat-container">
+            <h1 id="current-patient">Select a patient to start chatting</h1>
+        <div id="chat-box"></div>
+        <form id="chat-form">
+            <input type="text" id="message-input" placeholder="Type your message..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const patientList = document.getElementById('patient-list');
+            const chatBox = document.getElementById('chat-box');
+            const form = document.getElementById('chat-form');
+            const messageInput = document.getElementById('message-input');
+            let chatSocket = null;
+
+            function displayPatients() {
+                // Example patient data
+                const patients = [
+                    { id: 1, name: 'Fathima' },
+                    { id: 2, name: 'Rafa' }
+                ];
+
+                patients.forEach(patient => {
+                    const div = document.createElement('div');
+                    div.className = 'patient-item';
+                    div.textContent = patient.name;
+                    div.dataset.id = patient.id;
+                    div.addEventListener('click', () => selectPatient(patient));
+                    patientList.appendChild(div);
+                });
+            }
+
+            function selectPatient(patient) {
+                const patientId = patient.id;
+                document.getElementById('current-patient').textContent = `Chat with ${patient.name}`;
+                chatBox.innerHTML = ''; // Clear chat box
+
+                if (chatSocket) {
+                    chatSocket.close();
+                }
+                
+                const chatSocket = new WebSocket(`ws://${window.location.host.replace(':8000', ':8080')}/ws/chat/${patientId}/`);
+
+                chatSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    const message = data['message'];
+                    const senderId = data['sender_id'];
+                    addMessage(message, senderId === yourUserId); // Adjust logic based on actual user ID
+                };
+
+                chatSocket.onclose = function(e) {
+                    console.error('Chat socket closed unexpectedly');
+                };
+
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const message = messageInput.value;
+                    addMessage(message, true); // Add user message
+                    messageInput.value = '';
+
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'sender_id': yourUserId // Replace with actual doctor ID
+                    }));
+                });
+
+                function addMessage(message, isUser) {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message' + (isUser ? ' user' : '');
+                    messageElement.textContent = message;
+                    chatBox.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }
+
+            displayPatients();
+        });
+            
+        </script>
+    </body>
+    </html>
+        
+    </body>
+    </html>
+    
+
+
+   
+    <!-- Page Header End -->
+     
+
+
+   
+
+  
+   
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'lib/wow/wow.min.js'%}"></script>
+    <script src="{% static 'lib/easing/easing.min.js'%}"></script>
+    <script src="{% static 'lib/waypoints/waypoints.min.js'%}"></script>
+    <script src="{% static 'lib/counterup/counterup.min.js'%}"></script>
+    <script src="{% static 'lib/owlcarousel/owl.carousel.min.js'%}"></script>
+    <script src="{% static 'lib/tempusdominus/js/moment.min.js'%}"></script>
+    <script src="{% static 'lib/tempusdominus/js/moment-timezone.min.js'%}"></script>
+    <script src="{% static 'lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js'%}"></script>
+
+    <!-- Template Javascript -->
+    <script src="{% static 'js/main.js'%}"></script>
+</body>
+
+</html>
